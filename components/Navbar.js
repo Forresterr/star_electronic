@@ -14,7 +14,7 @@ export default function Navbar({ messages, locale }) {
       .split(".")
       .reduce(
         (o, k) => (o && o[k] !== undefined ? o[k] : undefined),
-        messages
+        messages,
       ) ??
     fallback ??
     key;
@@ -245,19 +245,53 @@ function LangSwitcher({ currentLocale, pathname }) {
         xmlns="http://www.w3.org/2000/svg"
       >
         <rect width="60" height="45" fill="#fff" />
-        <rect y="30" width="60" height="15" fill="#0b4ea2" />
-        <rect y="15" width="60" height="15" fill="#ee1c25" />
-        <ellipse
-          cx="18"
-          cy="22"
-          rx="7"
-          ry="10"
-          fill="#fff"
-          stroke="#0b4ea2"
-          strokeWidth="2"
-        />
-        <path d="M18 15 v14" stroke="#ee1c25" strokeWidth="2" />
-        <circle cx="18" cy="22" r="3" fill="#ee1c25" />
+        <rect y="15" width="60" height="15" fill="#0b4ea2" />
+        <rect y="30" width="60" height="15" fill="#ee1c25" />
+        {/* Coat of arms: shield with double cross on three hills */}
+        <g transform="translate(6,6) scale(0.85)">
+          <path
+            d="M18 0 C11 0 6 4 6 10 C6 18 18 28 18 28 C18 28 30 18 30 10 C30 4 25 0 18 0 Z"
+            fill="#ee1c25"
+            stroke="#fff"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          {/* white double cross */}
+          <g transform="translate(0,1)">
+            <path
+              d="M18 4 L18 20"
+              stroke="#fff"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M14 8 H22"
+              stroke="#fff"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M12 12 H24"
+              stroke="#fff"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+            />
+          </g>
+          {/* blue triple-hill base */}
+          <g transform="translate(0,12)">
+            <path
+              d="M6 12 C9 8 12 8 15 12 C18 16 27 16 30 12 C33 8 36 8 39 12 L6 12 Z"
+              fill="#0b4ea2"
+            />
+          </g>
+          {/* small white border separator on shield top-left to mimic real emblem */}
+          <path
+            d="M12 2 C14 2 16 3 18 3"
+            stroke="#fff"
+            strokeWidth="0.8"
+            fill="none"
+          />
+        </g>
       </svg>
     ),
     cs: (
