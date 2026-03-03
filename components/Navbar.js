@@ -251,7 +251,7 @@ export default function Navbar({ messages, locale }) {
               </div>
             </div>
             {/* Right side border extending to screen edge */}
-            <div className="absolute bottom-0 right-0 h-[2px] bg-primary z-20 w-[90%]"></div>
+            <div className="absolute bottom-0 right-0 h-[2px] bg-primary z-20 w-[calc(50%+350px)]"></div>
           </>
         )}
         <nav className="container mx-auto flex items-center justify-between px-4 py-3 relative z-10">
