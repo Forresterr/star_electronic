@@ -66,7 +66,13 @@
       "phone": "+420 123 456 789",
       "subject": "Jak vám můžeme pomoci?",
       "message": "Řekněte nám o svém projektu..."
-    }
+    },
+    "callUs": "Zavolejte nám",
+    "emailUs": "Napište nám",
+    "visitUs": "Navštivte nás",
+    "address": "123 Star Street, Tech City, TC 90210",
+    "phoneNumber": "+1 (555) 123-4567",
+    "emailAddress": "info@star-electronic.example"
   },
   "dashboard": {
     "title": "Správa",
@@ -88,6 +94,9 @@
     "email": "info@star-electronic.example",
     "phone": "+1 (555) 123-4567",
     "followUs": "Sledujte nás",
-    "copyright": "© {year} Star Electronic. Všechna práva vyhrazena."
+    "copyright": "© {year} Star Electronic. Všechna práva vyhrazena.",
+    "addressCopied": "Adresa zkopírována",
+    "emailCopied": "E-mail zkopírován",
+    "phoneCopied": "Telefonní číslo zkopírováno"
   }
 }

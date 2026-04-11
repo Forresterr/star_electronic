@@ -66,7 +66,13 @@
       "phone": "+1 (555) 000-0000",
       "subject": "How can we help?",
       "message": "Tell us about your project..."
-    }
+    },
+    "callUs": "Call Us",
+    "emailUs": "Email Us",
+    "visitUs": "Visit Us",
+    "address": "123 Star Street, Tech City, TC 90210",
+    "phoneNumber": "+1 (555) 123-4567",
+    "emailAddress": "info@star-electronic.example"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -83,6 +89,9 @@
     "email": "info@star-electronic.example",
     "phone": "+1 (555) 123-4567",
     "followUs": "Follow Us",
-    "copyright": "© {year} Star Electronic. All rights reserved."
+    "copyright": "© {year} Star Electronic. All rights reserved.",
+    "addressCopied": "Address copied",
+    "emailCopied": "Email copied",
+    "phoneCopied": "Phone number copied"
   }
 }

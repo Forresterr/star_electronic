@@ -66,7 +66,13 @@
       "phone": "+36 1 234 5678",
       "subject": "Miben segíthetünk?",
       "message": "Meséljen a projektjéről..."
-    }
+    },
+    "callUs": "Hívjon minket",
+    "emailUs": "Küldjön e-mailt",
+    "visitUs": "Látogasson el hozzánk",
+    "address": "123 Star Street, Tech City, TC 90210",
+    "phoneNumber": "+1 (555) 123-4567",
+    "emailAddress": "info@star-electronic.example"
   },
   "dashboard": {
     "title": "Admin",
@@ -88,6 +94,9 @@
     "email": "info@star-electronic.example",
     "phone": "+1 (555) 123-4567",
     "followUs": "Kövessen minket",
-    "copyright": "© {year} Star Electronic. Minden jog fenntartva."
+    "copyright": "© {year} Star Electronic. Minden jog fenntartva.",
+    "addressCopied": "Cím másolva",
+    "emailCopied": "E-mail másolva",
+    "phoneCopied": "Telefonszám másolva"
   }
 }

@@ -6,6 +6,8 @@ import StarBackground from "@/components/StarBackground";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { locales } from "../../../i18n.config";
 import EmailEditor from "react-email-editor";
+import Editor from "@monaco-editor/react";
+import ActionPopover from "@/components/ActionPopover";
 
 const FOLDERS = [
   { key: "star_electronic_carousel", label: "Carousel" },
@@ -318,6 +320,7 @@ function MediaManager({ folderKey, title, showDescriptions = true }) {
   const [loading, setLoading] = useState(false);
   const [descMap, setDescMap] = useState({});
   const [deletingItem, setDeletingItem] = useState(null);
+  const [popover, setPopover] = useState(null);
   const [isMobileView, setIsMobileView] = useState(false);
 
   // Use folderKey immediately
@@ -365,11 +368,18 @@ function MediaManager({ folderKey, title, showDescriptions = true }) {
     refresh();
   }
 
-  async function onSaveDescriptions() {
+  async function onSaveDescriptions(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
     await fetch("/api/media/descriptions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ folder, descriptions: descMap }),
+    });
+    setPopover({
+      id: Date.now(),
+      message: "Descriptions saved!",
+      x: rect.x + rect.width / 2,
+      y: rect.y,
     });
     refresh();
   }
@@ -383,8 +393,9 @@ function MediaManager({ folderKey, title, showDescriptions = true }) {
     refresh();
   }
 
-  async function onConfirmDelete() {
+  async function onConfirmDelete(e) {
     if (!deletingItem) return;
+    const rect = e.currentTarget.getBoundingClientRect();
     try {
       await fetch("/api/media/delete", {
         method: "POST",
@@ -393,13 +404,27 @@ function MediaManager({ folderKey, title, showDescriptions = true }) {
       });
       setDeletingItem(null);
       refresh();
-    } catch (e) {
-      alert("Failed to delete item: " + e.message);
+    } catch (err) {
+      setPopover({
+      id: Date.now(),
+      message: "Failed: " + err.message,
+        x: rect.x + rect.width / 2,
+        y: rect.y,
+        isError: true,
+      });
     }
   }
 
   return (
     <>
+      {popover && (
+        <ActionPopover key={popover.id} message={popover.message}
+          x={popover.x}
+          y={popover.y}
+          isError={popover.isError}
+          onClose={() => setPopover(null)}
+        />
+      )}
       <div className="space-y-6 fade-in-up">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
           <div>
@@ -554,7 +579,22 @@ function ContentEditor({ currentLocale }) {
   const [selectedLocale, setSelectedLocale] = useState(currentLocale);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [popover, setPopover] = useState(null);
   const [jsonString, setJsonString] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const check = () =>
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    check();
+    const mo = new MutationObserver(() => check());
+    mo.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => mo.disconnect();
+  }, []);
 
   useEffect(() => {
     loadContent(selectedLocale);
@@ -572,7 +612,9 @@ function ContentEditor({ currentLocale }) {
     }
   }
 
-  async function handleSave() {
+  async function handleSave(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const coords = { x: rect.x + rect.width / 2, y: rect.y };
     try {
       const content = JSON.parse(jsonString);
       const res = await fetch("/api/content", {
@@ -581,18 +623,36 @@ function ContentEditor({ currentLocale }) {
         body: JSON.stringify({ locale: selectedLocale, content }),
       });
       if (res.ok) {
-        alert("Saved content successfully!");
+        setPopover({ id: Date.now(), message: "Saved content successfully!", ...coords });
         loadContent(selectedLocale);
       } else {
-        alert("Failed to save content.");
+        setPopover({
+      id: Date.now(),
+      message: "Failed to save content.",
+          isError: true,
+          ...coords,
+        });
       }
-    } catch (e) {
-      alert("Invalid JSON. Please fix syntax errors.");
+    } catch (err) {
+      setPopover({
+      id: Date.now(),
+      message: "Invalid JSON. Please fix syntax errors.",
+        isError: true,
+        ...coords,
+      });
     }
   }
 
   return (
     <div className="space-y-6 fade-in-up">
+      {popover && (
+        <ActionPopover key={popover.id} message={popover.message}
+          x={popover.x}
+          y={popover.y}
+          isError={popover.isError}
+          onClose={() => setPopover(null)}
+        />
+      )}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
         <div>
           <h2 className="text-lg md:text-3xl font-bold mb-2">Content Editor</h2>
@@ -635,12 +695,21 @@ function ContentEditor({ currentLocale }) {
             <i className="fas fa-circle-notch fa-spin text-4xl text-primary opacity-50"></i>
           </div>
         ) : (
-          <div className="relative">
-            <textarea
-              className="w-full min-h-[65vh] font-mono text-sm p-6 bg-card focus:outline-none resize-none leading-relaxed"
+          <div className="relative h-[65vh]">
+            <Editor
+              height="100%"
+              language="json"
+              theme={isDarkMode ? "vs-dark" : "vs-light"}
               value={jsonString}
-              onChange={(e) => setJsonString(e.target.value)}
-              spellCheck={false}
+              onChange={(value) => setJsonString(value || "")}
+              options={{
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+                wrappingIndent: "indent",
+                formatOnPaste: true,
+                formatOnType: true,
+              }}
             />
           </div>
         )}
@@ -653,6 +722,7 @@ function ColorEditor() {
   const [allVariables, setAllVariables] = useState({ light: {}, dark: {} });
   const [mode, setMode] = useState("light"); // 'light' | 'dark'
   const [loading, setLoading] = useState(false);
+  const [popover, setPopover] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -666,15 +736,29 @@ function ColorEditor() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleSave() {
+  async function handleSave(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const coords = { x: rect.x + rect.width / 2, y: rect.y };
+
     const res = await fetch("/api/colors", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(allVariables),
     });
 
-    if (res.ok) alert("Theme saved! Refresh to see changes.");
-    else alert("Failed to save theme.");
+    if (res.ok)
+      setPopover({
+      id: Date.now(),
+      message: "Theme saved! Refresh to see changes.",
+        ...coords,
+      });
+    else
+      setPopover({
+      id: Date.now(),
+      message: "Failed to save theme.",
+        isError: true,
+        ...coords,
+      });
   }
 
   // Helper: Convert "background-color" -> "Background Color"
@@ -893,6 +977,14 @@ function ColorEditor() {
 
   return (
     <div className="space-y-6 fade-in-up">
+      {popover && (
+        <ActionPopover key={popover.id} message={popover.message}
+          x={popover.x}
+          y={popover.y}
+          isError={popover.isError}
+          onClose={() => setPopover(null)}
+        />
+      )}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
         <div>
           <h2 className="text-lg md:text-3xl font-bold mb-2">Theme Editor</h2>
@@ -1107,6 +1199,7 @@ function EmailSettings({ type }) {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [popover, setPopover] = useState(null);
 
   const isOwner = type === "owner";
   const enabledKey = isOwner ? "ownerEnabled" : "userEnabled";
@@ -1271,8 +1364,10 @@ function EmailSettings({ type }) {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  async function save() {
+  async function save(e) {
     setSaving(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    const coords = { x: rect.x + rect.width / 2, y: rect.y };
 
     // Export HTML and JSON from the editor
     if (emailEditorRef.current) {
@@ -1298,7 +1393,7 @@ function EmailSettings({ type }) {
 
         setSettings(newSettings);
         setSaving(false);
-        alert("Settings saved!");
+        setPopover({ id: Date.now(), message: "Settings saved!", ...coords });
       });
     } else {
       // Fallback if editor not loaded (shouldn't happen)
@@ -1313,6 +1408,14 @@ function EmailSettings({ type }) {
 
   return (
     <div className="space-y-6">
+      {popover && (
+        <ActionPopover key={popover.id} message={popover.message}
+          x={popover.x}
+          y={popover.y}
+          isError={popover.isError}
+          onClose={() => setPopover(null)}
+        />
+      )}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg md:text-2xl font-bold mb-2">{title}</h2>
