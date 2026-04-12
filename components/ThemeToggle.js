@@ -38,6 +38,26 @@ export default function ThemeToggle({ mobile }) {
 
   const [open, setOpen] = useState(false);
   const btnRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const [desktopMenuTop, setDesktopMenuTop] = useState(0);
+
+  function updateDesktopMenuTop() {
+    if (mobile || !wrapperRef.current) return;
+    const nav = wrapperRef.current.closest("nav");
+    if (!nav) return;
+    const navRect = nav.getBoundingClientRect();
+    const wrapperRect = wrapperRef.current.getBoundingClientRect();
+    setDesktopMenuTop(navRect.bottom - wrapperRect.top);
+  }
+
+  useEffect(() => {
+    if (!open || mobile) return;
+    updateDesktopMenuTop();
+
+    const onResize = () => updateDesktopMenuTop();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [open, mobile]);
 
   useEffect(() => {
     const onDocClick = (e) => {
@@ -63,7 +83,7 @@ export default function ThemeToggle({ mobile }) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={wrapperRef}>
       <button
         ref={btnRef}
         type="button"
@@ -81,8 +101,9 @@ export default function ThemeToggle({ mobile }) {
           className={`absolute z-50 bg-background shadow-lg ${
             mobile
               ? "bottom-full mb-2 left-1/2 -translate-x-1/2 w-[110px] rounded-2xl border border-border p-1"
-              : "right-0 mt-[0.97rem] w-30 rounded-bl-lg rounded-br-lg border-[0_2px_2px_2px] border-border inset-shadow-top"
+              : "right-0 w-30 rounded-bl-lg rounded-br-lg border-[0_2px_2px_2px] border-border inset-shadow-top"
           }`}
+          style={mobile ? undefined : { top: `${desktopMenuTop}px` }}
         >
           {opts.map((o) => (
             <button
