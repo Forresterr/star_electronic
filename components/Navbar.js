@@ -491,6 +491,33 @@ function LangSwitcher({ currentLocale, pathname, mobile }) {
   }
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const buttonRef = useRef(null);
+  const [desktopMenuStyle, setDesktopMenuStyle] = useState({
+    left: 0,
+    width: 0,
+  });
+
+  function updateDesktopMenuPosition() {
+    if (mobile || !buttonRef.current || !ref.current) return;
+    const nav = ref.current.closest("nav");
+    if (!nav) return;
+    const navRect = nav.getBoundingClientRect();
+    const buttonRect = buttonRef.current.getBoundingClientRect();
+    setDesktopMenuStyle({
+      left: buttonRect.left - navRect.left,
+      width: buttonRect.width,
+    });
+  }
+
+  useEffect(() => {
+    if (!open || mobile) return;
+    updateDesktopMenuPosition();
+
+    const onResize = () => updateDesktopMenuPosition();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [open, mobile, currentLocale, pathname]);
+
   useEffect(() => {
     const onClick = (e) => {
       if (!ref.current) return;
@@ -505,9 +532,10 @@ function LangSwitcher({ currentLocale, pathname, mobile }) {
   const hasMounted = useHasMounted();
   // Always render British flag emoji and 'English' label on server, swap to correct SVG/label after hydration
   return (
-    <div className="relative" ref={ref}>
+    <div className={mobile ? "relative" : "static"} ref={ref}>
       <button
         type="button"
+        ref={buttonRef}
         className={`btn btn-ghost h-10 px-3 flex items-center gap-2 ${
           mobile ? "w-full justify-center" : ""
         }`}
@@ -540,8 +568,16 @@ function LangSwitcher({ currentLocale, pathname, mobile }) {
           className={`absolute z-50 bg-background shadow-lg ${
             mobile
               ? "bottom-full mb-2 left-1/2 -translate-x-1/2 w-[180px] rounded-2xl border border-border p-1"
-              : "right-0 mt-[0.9rem] w-[134.33px] rounded-bl-lg rounded-br-lg border-[0_2px_2px_2px] border-border inset-shadow-sm inset-shadow-top"
+              : "top-full rounded-bl-lg rounded-br-lg border-[0_2px_2px_2px] border-border inset-shadow-sm inset-shadow-top"
           }`}
+          style={
+            mobile
+              ? undefined
+              : {
+                  left: `${desktopMenuStyle.left}px`,
+                  width: `${desktopMenuStyle.width}px`,
+                }
+          }
         >
           {locales.map((l) => (
             <button
