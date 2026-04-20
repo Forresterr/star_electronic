@@ -204,6 +204,7 @@ export default function ContactForm({ messages }) {
             </div>
           </div>
 
+          {t("contact.address") && (
           <div
             onClick={(e) =>
               handleCopy(
@@ -225,7 +226,7 @@ export default function ContactForm({ messages }) {
                 {t("contact.address", "123 Star Street, Tech City, TC 90210")}
               </span>
             </div>
-          </div>
+          </div>)}
         </div>
       </div>
 
